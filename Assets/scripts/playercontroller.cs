@@ -28,6 +28,7 @@ public class PlayerController : MonoBehaviour
     private Camera fpsCam;
     private Camera topCam;
     private bool usingFPS = true;
+    [HideInInspector] public bool isDead = false;
 
     [Header("Animator")]
     public Animator animator;
@@ -36,6 +37,9 @@ public class PlayerController : MonoBehaviour
     private float verticalVelocity;
     private bool isGrounded;
     private float xRotation = 14.0f;
+    private Vector3 recoilDirection = Vector3.zero;
+private float recoilDecay = 10f;
+
 
     void Start()
     {
@@ -53,6 +57,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (isDead) return;
         HandleCameraSwitch();
         HandleMouseLook();
         HandleMovement();
@@ -68,45 +73,43 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-   void SwitchToFPS()
-{
-    fpsCam.enabled = true;
-    topCam.enabled = false;
-
-    fpsCam.GetComponent<AudioListener>().enabled = true;
-    topCam.GetComponent<AudioListener>().enabled = false;
-
-    Cursor.lockState = CursorLockMode.Locked;
-}
-
-void SwitchToTop()
-{
-    fpsCam.enabled = false;
-    topCam.enabled = true;
-
-    fpsCam.GetComponent<AudioListener>().enabled = false;
-    topCam.GetComponent<AudioListener>().enabled = true;
-
-    Cursor.lockState = CursorLockMode.None;
-}
-
-
-   void HandleMouseLook()
-{
-    float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-
-    if (usingFPS)
+    void SwitchToFPS()
     {
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+        fpsCam.enabled = true;
+        topCam.enabled = false;
 
-        xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -15f, 15f);
+        fpsCam.GetComponent<AudioListener>().enabled = true;
+        topCam.GetComponent<AudioListener>().enabled = false;
 
-        fpsCameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
     }
 
-    playerBody.Rotate(Vector3.up * mouseX);
-}
+    void SwitchToTop()
+    {
+        fpsCam.enabled = false;
+        topCam.enabled = true;
+
+        fpsCam.GetComponent<AudioListener>().enabled = false;
+        topCam.GetComponent<AudioListener>().enabled = true;
+
+    }
+
+
+    void HandleMouseLook()
+    {
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+
+        if (usingFPS)
+        {
+            float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+
+            xRotation -= mouseY;
+            xRotation = Mathf.Clamp(xRotation, -15f, 15f);
+
+            fpsCameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+        }
+
+        playerBody.Rotate(Vector3.up * mouseX);
+    }
 
     void HandleMovement()
     {
@@ -166,5 +169,19 @@ void SwitchToTop()
         // Apply gravity
         verticalVelocity += gravity * Time.deltaTime;
         controller.Move(Vector3.up * verticalVelocity * Time.deltaTime);
+
+        // Apply recoil effect
+        if (recoilDirection.magnitude > 0.1f)
+        {
+            finalMove += recoilDirection;
+            recoilDirection = Vector3.Lerp(recoilDirection, Vector3.zero, recoilDecay * Time.deltaTime);
+        }
+
+
     }
+    public void ApplyRecoil(Vector3 direction, float force)
+{
+    recoilDirection = direction.normalized * force;
+}
+
 }
