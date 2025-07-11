@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using System.Collections;
 
 public class HealthComponent : MonoBehaviour
 {
@@ -12,45 +13,43 @@ public class HealthComponent : MonoBehaviour
     private DeathCameraManager cameraManager;
     public UnityEvent<float> onHealthChanged;
 
+    public float delayBeforeGameOver = 3f; // Delay after death before Game Over
+
     [System.Obsolete]
     void Awake()
-{
-    if (onHealthChanged == null)
-        onHealthChanged = new UnityEvent<float>();
-
-    if (onDeath == null)
-        onDeath = new UnityEvent();
-}
-
-
-
-
-   void Start()
-{
-    currentHealth = maxHealth;
-    onHealthChanged.Invoke(currentHealth);
-}
-
-
-    public void TakeDamage(float amount)
-{
-    currentHealth -= amount;
-    currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
-
-    if (onHealthChanged != null)
-        onHealthChanged.Invoke(currentHealth); // 👈 this now works after Awake()
-
-    if (currentHealth <= 0)
     {
-        Die();
+        if (onHealthChanged == null)
+            onHealthChanged = new UnityEvent<float>();
+
+        if (onDeath == null)
+            onDeath = new UnityEvent();
+
+        cameraManager = FindObjectOfType<DeathCameraManager>();
     }
-}
 
+    void Start()
+    {
+        currentHealth = maxHealth;
+        onHealthChanged.Invoke(currentHealth);
+    }
 
+    [System.Obsolete]
+    public void TakeDamage(float amount)
+    {
+        currentHealth -= amount;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+
+        onHealthChanged?.Invoke(currentHealth);
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    [System.Obsolete]
     public void Die()
     {
-        Debug.Log("Player Died");
-
         if (deathEffect != null)
             Instantiate(deathEffect, transform.position, Quaternion.identity);
 
@@ -67,16 +66,36 @@ public class HealthComponent : MonoBehaviour
         Animator anim = GetComponent<Animator>();
         if (anim != null) anim.SetTrigger("Die");
 
-        // 👇 Use the manager to activate the death camera
         if (cameraManager != null)
-            cameraManager.ActivateDeathCamera();
+            cameraManager.SwitchToDeathCamera();
 
-        Invoke(nameof(DisablePlayer), 3f);
+        onDeath?.Invoke();
+
+        StartCoroutine(HandleDeathSequence());
     }
 
-    void DisablePlayer()
+    [System.Obsolete]
+    private IEnumerator HandleDeathSequence()
     {
-        gameObject.SetActive(false);
+        yield return new WaitForSeconds(delayBeforeGameOver);
+
+        // 🎬 Show Game Over fade-in screen
+        GameOverManager gameOver = FindObjectOfType<GameOverManager>();
+        if (gameOver != null)
+            gameOver.ShowGameOver();
+
+        // 💥 Then destroy the player GameObject
+        Destroy(gameObject);
     }
-    
+    [System.Obsolete]
+public void Heal(float amount)
+{
+    if (currentHealth <= 0) return; // Don't heal if dead
+
+    currentHealth += amount;
+    currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+
+    onHealthChanged?.Invoke(currentHealth);
+}
+
 }

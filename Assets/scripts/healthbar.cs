@@ -24,7 +24,7 @@ public class PlayerHealthUIManager : MonoBehaviour
 
    void UpdateHealthBar(float currentHealth)
 {
-    Debug.Log("Health: " + currentHealth + " / " + playerHealth.maxHealth);
+    // Debug.Log("Health: " + currentHealth + " / " + playerHealth.maxHealth);
 
     if (playerHealth != null && healthFill != null)
     {

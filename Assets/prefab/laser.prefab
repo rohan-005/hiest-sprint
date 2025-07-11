@@ -127,7 +127,7 @@ MonoBehaviour:
   speed: 10
   lifeTime: 2
   fireSound: {fileID: 8300000, guid: dd867813159f104418ba8f3013742b99, type: 3}
-  dom: 20
+  dom: 50
 --- !u!54 &4235042032509378029
 Rigidbody:
   m_ObjectHideFlags: 0
