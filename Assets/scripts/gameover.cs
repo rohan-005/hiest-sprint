@@ -8,6 +8,18 @@ public class GameOverManager : MonoBehaviour
     public float fadeDuration = 1.5f;
     public float delayBeforeButtons = 1.5f;
 
+    public AudioClip gameOverSound;     // 🎵 Assign a Game Over sound in the Inspector
+    private AudioSource audioSource;
+
+    void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
+
+        audioSource.playOnAwake = false;
+    }
+
     public void ShowGameOver()
     {
         StartCoroutine(FadeInGameOver());
@@ -17,25 +29,29 @@ public class GameOverManager : MonoBehaviour
     {
         float elapsed = 0f;
 
-        // Disable all gameplay by setting Time.timeScale to 0 (optional but helps prevent background actions)
-        Time.timeScale = 0f;
+        Time.timeScale = 0f; // Stop gameplay
+
+        // 🎵 Play Game Over Sound using unscaled time
+        if (gameOverSound != null)
+        {
+            audioSource.clip = gameOverSound;
+            audioSource.Play(); // AudioSource still works even when Time.timeScale is 0
+        }
 
         while (elapsed < fadeDuration)
         {
-            elapsed += Time.unscaledDeltaTime; // Use unscaled time since timeScale is 0
+            elapsed += Time.unscaledDeltaTime;
             gameOverImage.alpha = Mathf.Clamp01(elapsed / fadeDuration);
             yield return null;
         }
 
-        yield return new WaitForSecondsRealtime(delayBeforeButtons); // Again, unscaled wait
+        yield return new WaitForSecondsRealtime(delayBeforeButtons);
 
         buttonsGroup.SetActive(true);
 
-        // 👇 Show and unlock mouse cursor
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
 
-        // 👇 Block background interaction (optional but recommended)
         gameOverImage.blocksRaycasts = true;
         gameOverImage.interactable = true;
     }

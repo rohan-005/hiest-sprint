@@ -11,25 +11,25 @@ public class HealthPickup : MonoBehaviour
     public float pulseScale = 0.05f;
     public float pulseSpeed = 2f;
 
+    public AudioClip pickupSound; // 🔊 Assign in Inspector
+
     private Vector3 startPos;
     private Vector3 initialScale;
+    private AudioSource audioSource;
 
     void Start()
     {
         startPos = transform.position;
         initialScale = transform.localScale;
+        audioSource = GetComponent<AudioSource>();
     }
 
     void Update()
     {
-        // Rotate
         transform.Rotate(Vector3.up * rotationSpeed * Time.deltaTime, Space.World);
-
-        // Float
         float newY = Mathf.Sin(Time.time * floatFrequency) * floatAmplitude;
         transform.position = startPos + Vector3.up * newY;
 
-        // Pulse
         float pulse = Mathf.Sin(Time.time * pulseSpeed) * pulseScale;
         transform.localScale = initialScale + Vector3.one * pulse;
     }
@@ -47,6 +47,11 @@ public class HealthPickup : MonoBehaviour
                 PlayerHealFlash flash = FindObjectOfType<PlayerHealFlash>();
                 if (flash != null)
                     flash.TriggerFlash();
+            }
+
+            if (audioSource != null && pickupSound != null)
+            {
+                AudioSource.PlayClipAtPoint(pickupSound, transform.position); // 🔊 Play once
             }
 
             Destroy(gameObject);

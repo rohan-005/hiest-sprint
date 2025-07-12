@@ -8,12 +8,18 @@ public class HealthComponent : MonoBehaviour
     public float currentHealth;
 
     public UnityEvent onDeath;
+    public UnityEvent<float> onHealthChanged;
     public GameObject deathEffect;
 
     private DeathCameraManager cameraManager;
-    public UnityEvent<float> onHealthChanged;
+    private PlayerDamageFlash damageFlash;
+    public float delayBeforeGameOver = 3f;
 
-    public float delayBeforeGameOver = 3f; // Delay after death before Game Over
+    // Fall damage settings
+    private float fallThresholdY = -5f;
+    private float fallDamageAmount = 10f;
+    private float fallCheckInterval = 2f;
+    private float nextFallDamageTime = 0f;
 
     [System.Obsolete]
     void Awake()
@@ -25,6 +31,7 @@ public class HealthComponent : MonoBehaviour
             onDeath = new UnityEvent();
 
         cameraManager = FindObjectOfType<DeathCameraManager>();
+        damageFlash = FindObjectOfType<PlayerDamageFlash>(); // 👈 Find the flash system
     }
 
     void Start()
@@ -34,17 +41,38 @@ public class HealthComponent : MonoBehaviour
     }
 
     [System.Obsolete]
+    void Update()
+    {
+        CheckFallDamage();
+    }
+
+    [System.Obsolete]
     public void TakeDamage(float amount)
     {
+        if (currentHealth <= 0) return;
+
         currentHealth -= amount;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
-
         onHealthChanged?.Invoke(currentHealth);
+
+        // 🔴 Trigger damage flash effect
+        if (damageFlash != null)
+            damageFlash.TriggerFlash();
 
         if (currentHealth <= 0)
         {
             Die();
         }
+    }
+
+    [System.Obsolete]
+    public void Heal(float amount)
+    {
+        if (currentHealth <= 0) return;
+
+        currentHealth += amount;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        onHealthChanged?.Invoke(currentHealth);
     }
 
     [System.Obsolete]
@@ -79,23 +107,22 @@ public class HealthComponent : MonoBehaviour
     {
         yield return new WaitForSeconds(delayBeforeGameOver);
 
-        // 🎬 Show Game Over fade-in screen
         GameOverManager gameOver = FindObjectOfType<GameOverManager>();
         if (gameOver != null)
             gameOver.ShowGameOver();
 
-        // 💥 Then destroy the player GameObject
         Destroy(gameObject);
     }
+
     [System.Obsolete]
-public void Heal(float amount)
-{
-    if (currentHealth <= 0) return; // Don't heal if dead
+    private void CheckFallDamage()
+    {
+        if (currentHealth <= 0) return;
 
-    currentHealth += amount;
-    currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
-
-    onHealthChanged?.Invoke(currentHealth);
-}
-
+        if (transform.position.y < fallThresholdY && Time.time >= nextFallDamageTime)
+        {
+            TakeDamage(fallDamageAmount);
+            nextFallDamageTime = Time.time + fallCheckInterval;
+        }
+    }
 }

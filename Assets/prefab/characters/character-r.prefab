@@ -119,7 +119,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -8.215797, y: 0.5, z: -18.103443}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5485962947021629139}
@@ -151,7 +151,7 @@ CharacterController:
   m_StepOffset: 0.5
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 1.35, z: 0}
+  m_Center: {x: 0, y: 1.4, z: 0}
 --- !u!114 &914732297031617831
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -213,14 +213,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   currentHealth: 0
-  deathCameraObject: {fileID: 0}
   onDeath:
     m_PersistentCalls:
       m_Calls: []
-  deathEffect: {fileID: 0}
   onHealthChanged:
     m_PersistentCalls:
       m_Calls: []
+  deathEffect: {fileID: 0}
+  delayBeforeGameOver: 3
 --- !u!1 &4403843538726915320
 GameObject:
   m_ObjectHideFlags: 0

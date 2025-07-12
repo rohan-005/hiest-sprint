@@ -2,25 +2,23 @@ using UnityEngine;
 
 public class ItemPickup : MonoBehaviour
 {
-    public float fillAmountOnPickup = 0.2f; 
     public float rotationSpeed = 90f;
-
-    public float pulseScale = 0.05f;       // Scale variation
-    public float pulseSpeed = 2f;          // Speed of pulsing
+    public float pulseScale = 0.05f;
+    public float pulseSpeed = 2f;
+    public AudioClip pickupSound; // 🔊 Assign in Inspector
 
     private Vector3 initialScale;
+    private AudioSource audioSource;
 
     void Start()
     {
         initialScale = transform.localScale;
+        audioSource = GetComponent<AudioSource>();
     }
 
     void Update()
     {
-        // Rotate
         transform.Rotate(Vector3.up * rotationSpeed * Time.deltaTime, Space.World);
-
-        // Pulse scale
         float pulse = Mathf.Sin(Time.time * pulseSpeed) * pulseScale;
         transform.localScale = initialScale + Vector3.one * pulse;
     }
@@ -33,7 +31,12 @@ public class ItemPickup : MonoBehaviour
             ItemBarManager bar = FindObjectOfType<ItemBarManager>();
             if (bar != null)
             {
-                bar.AddToBar(fillAmountOnPickup);
+                bar.AddOneItem();
+            }
+
+            if (audioSource != null && pickupSound != null)
+            {
+                AudioSource.PlayClipAtPoint(pickupSound, transform.position); // 🔊 Play once at location
             }
 
             Destroy(gameObject);

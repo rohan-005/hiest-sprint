@@ -69,4 +69,15 @@ public class PauseMenuManager : MonoBehaviour
         Application.Quit();
 #endif
     }
+    public void Home()
+{
+    Time.timeScale = 1f;
+
+    // Restore cursor before switching scenes
+    Cursor.visible = true;
+    Cursor.lockState = CursorLockMode.None;
+
+    // Load the main menu scene (adjust name or index as needed)
+    SceneManager.LoadScene("start"); // 👈 Replace with your main menu scene name
+}
 }
